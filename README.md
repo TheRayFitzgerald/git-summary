@@ -4,7 +4,8 @@ A command-line tool that generates concise, AI-powered summaries of your recent 
 
 ## Features
 
-- Fetches git commits from the last 24 hours
+- Generates day-by-day summaries of git commits
+- Supports analyzing multiple days of commit history
 - Analyzes commit messages and changes
 - Generates a human-readable changelog using OpenAI's GPT model
 - Outputs the summary in markdown format
@@ -38,23 +39,34 @@ export OPENAI_API_KEY='your-api-key-here'
 Run the script from within any git repository:
 
 ```bash
+# Default: summarize last 24 hours
 ./git_summary.py
+
+# Summarize the last 7 days
+./git_summary.py --days 7
 ```
 
 The tool will:
-1. Fetch all commits from the last 24 hours
-2. Analyze the commits and their changes
+1. Process commits day by day for the specified time period
+2. Analyze the commits and their changes for each day
 3. Generate a concise summary using OpenAI's API
-4. Output the summary in markdown format
+4. Output daily summaries in markdown format
 
 ## Example Output
 
 ```markdown
-Changelog Summary:
+Changelog Summary for 2024-01-20:
 
 - Implemented user authentication system with OAuth2
 - Fixed critical bug in data processing pipeline
 - Added new dashboard features for monitoring
+
+--------------------------------------------------
+
+Changelog Summary for 2024-01-19:
+
+- Updated dependencies to latest versions
+- Improved error handling in API endpoints
 ```
 
 ## Environment Variables

@@ -3,17 +3,20 @@ from datetime import datetime, timedelta
 import subprocess
 import json
 import os
+import argparse
 
 
-def get_recent_commits(hours=24):
-    """Get commits from the last n hours."""
-    since_date = (datetime.now() - timedelta(hours=hours)).strftime("%Y-%m-%d %H:%M:%S")
+def get_commits_for_day(date):
+    """Get commits for a specific day."""
+    start_date = date.strftime("%Y-%m-%d 00:00:00")
+    end_date = (date + timedelta(days=1)).strftime("%Y-%m-%d 00:00:00")
 
     git_log = subprocess.run(
         [
             "git",
             "log",
-            f'--since="{since_date}"',
+            f'--since="{start_date}"',
+            f'--until="{end_date}"',
             "--pretty=format:%H|||%s|||%at",
         ],
         capture_output=True,
@@ -113,19 +116,34 @@ def generate_summary(commits):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Generate git commit summaries")
+    parser.add_argument(
+        "--days",
+        type=int,
+        default=1,
+        help="Number of days to analyze (default: 1)",
+    )
+    args = parser.parse_args()
+
     if not os.path.exists(".git"):
         print("Error: Not a git repository")
         return
 
-    recent_commits = get_recent_commits()
-    if not recent_commits:
-        print("No commits found in the last 24 hours")
-        return
-
-    formatted_commits = format_commit_data(recent_commits)
-    summary = generate_summary(formatted_commits)
-    print("\nChangelog Summary:\n")
-    print(summary)
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    for day_offset in range(args.days):
+        target_date = today - timedelta(days=day_offset)
+        commits = get_commits_for_day(target_date)
+        
+        if not commits:
+            print(f"\nNo commits found for {target_date.date()}")
+            continue
+            
+        print(f"\nChangelog Summary for {target_date.date()}:\n")
+        formatted_commits = format_commit_data(commits)
+        summary = generate_summary(formatted_commits)
+        print(summary)
+        print("\n" + "-" * 50)  # Separator between days
 
 
 if __name__ == "__main__":
